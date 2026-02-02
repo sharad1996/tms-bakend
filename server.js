@@ -1,4 +1,3 @@
-const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const { ApolloServer } = require('apollo-server-express');
@@ -20,10 +19,6 @@ async function startServer() {
 
   app.use(express.json());
 
-  // Serve frontend as static assets
-  const frontendPath = path.join(__dirname, '..', 'frontend');
-  app.use(express.static(frontendPath));
-
   const server = new ApolloServer({
     typeDefs,
     resolvers,
@@ -40,8 +35,7 @@ async function startServer() {
   const PORT = process.env.PORT || 4000;
   app.listen(PORT, () => {
     console.log(`🚚 TMS backend running at http://localhost:${PORT}`);
-    console.log(`🚀 GraphQL endpoint available at http://localhost:${PORT}${server.graphqlPath}`);
-    console.log(`🖥️  Frontend available at http://localhost:${PORT}`);
+    console.log(`🚀 GraphQL endpoint: http://localhost:${PORT}${server.graphqlPath}`);
   });
 }
 
