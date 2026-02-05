@@ -17,9 +17,9 @@ const ROLE_PERMISSIONS = {
     flagShipment: true,
   },
   EMPLOYEE: {
-    // Employee has limited permissions
+    // Employee has limited permissions (view-only)
     addShipment: false, // Employees cannot add shipments
-    updateShipment: true, // Can update shipments
+    updateShipment: false, // Cannot update shipments
     deleteShipment: false, // Cannot delete shipments
     viewAllShipments: true,
     viewDetailedReports: false, // Cannot view detailed reports
