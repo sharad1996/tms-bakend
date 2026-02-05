@@ -1,5 +1,5 @@
 const { shipments, shipmentsById, users } = require('./data');
-const { generateToken, requireRole } = require('./auth');
+const { generateToken, checkPermission, getPermissionsForRole } = require('./auth');
 
 function applyFilters(list, filter) {
   if (!filter) return list;
@@ -66,9 +66,19 @@ function applyPagination(list, page = 1, pageSize = 10) {
 
 const resolvers = {
   Query: {
-    me: (_, __, { user }) => user || null,
+    me: (_, __, { user }) => {
+      if (!user) return null;
+      return {
+        ...user,
+        permissions: getPermissionsForRole(user.role),
+      };
+    },
 
-    shipments: (_, args) => {
+    shipments: (_, args, { user }) => {
+      if (!user) {
+        throw new Error('Authentication required.');
+      }
+
       const { filter, sortBy, sortOrder, page, pageSize } = args;
 
       let list = shipments;
@@ -80,7 +90,10 @@ const resolvers = {
       return applyPagination(list, page, pageSize);
     },
 
-    shipment: (_, { id }) => {
+    shipment: (_, { id }, { user }) => {
+      if (!user) {
+        throw new Error('Authentication required.');
+      }
       return shipmentsById.get(id) || null;
     },
   },
@@ -97,11 +110,13 @@ const resolvers = {
         username: user.username,
         role: user.role,
         token,
+        permissions: getPermissionsForRole(user.role),
       };
     },
 
     addShipment: (_, { input }, context) => {
-      requireRole(context, ['ADMIN']);
+      // Check permission using the new permission system
+      checkPermission(context, 'addShipment');
 
       const id = String(shipments.length + 1);
       const newShipment = {
@@ -115,7 +130,8 @@ const resolvers = {
     },
 
     updateShipment: (_, { id, input }, context) => {
-      requireRole(context, ['ADMIN', 'EMPLOYEE']);
+      // Check permission using the new permission system
+      checkPermission(context, 'updateShipment');
 
       const existing = shipmentsById.get(id);
       if (!existing) {
@@ -126,7 +142,9 @@ const resolvers = {
     },
 
     deleteShipment: (_, { id }, context) => {
-      requireRole(context, ['ADMIN']);
+      // Check permission using the new permission system
+      checkPermission(context, 'deleteShipment');
+
       const existing = shipmentsById.get(id);
       if (!existing) {
         return false;
@@ -137,10 +155,12 @@ const resolvers = {
       }
       shipmentsById.delete(id);
       return true;
-    },
+    }, 
 
     toggleFlagShipment: (_, { id }, context) => {
-      requireRole(context, ['ADMIN', 'EMPLOYEE']);
+      // Check permission using the new permission system
+      checkPermission(context, 'flagShipment');
+
       const existing = shipmentsById.get(id);
       if (!existing) {
         throw new Error('Shipment not found');

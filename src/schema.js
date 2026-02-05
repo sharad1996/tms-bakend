@@ -6,11 +6,22 @@ const typeDefs = gql`
     EMPLOYEE
   }
 
+  type Permission {
+    addShipment: Boolean!
+    updateShipment: Boolean!
+    deleteShipment: Boolean!
+    viewAllShipments: Boolean!
+    viewDetailedReports: Boolean!
+    manageUsers: Boolean!
+    flagShipment: Boolean!
+  }
+
   type User {
     id: ID!
     username: String!
     role: Role!
     token: String
+    permissions: Permission!
   }
 
   type Location {
